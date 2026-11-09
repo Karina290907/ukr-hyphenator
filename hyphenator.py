@@ -5,6 +5,7 @@ morph = pymorphy3.MorphAnalyzer(lang='uk')
 
 def hyphenate_word(word):
     vowels = "аеєиіїоуюяАЕЄИІЇОУЮЯ"
+    
     if len(word) <= 3 or not any(c in vowels for c in word):
         return word
 
@@ -24,9 +25,16 @@ def hyphenate_word(word):
             continue
         if len(word) - split_point == 1:
             continue
-        if split_point < len(word) and word[split_point].lower() in "ь'й’":
+        if split_point < len(word) and word[split_point].lower() in "ьй’'":
             split_point += 1
         points.append(split_point)
+
+    # Якщо у слові є апостроф, гарантовано додаємо точку переносу одразу після нього
+    for idx, char in enumerate(word):
+        if char in "’'" and idx + 1 < len(word) and idx + 1 not in points:
+            points.append(idx + 1)
+
+    points = sorted(list(set(points)))
 
     if not points:
         return word
@@ -53,10 +61,10 @@ def analyze_word_extra(word):
     clean_word = re.sub(r'[^а-яА-ЯєЄіІїЇґҐ\'’ьЬ]', '', word)
     if not clean_word:
         return None
-
+        
     syllables = hyphenate_word(clean_word)
     parsed = morph.parse(clean_word)[0]
-
+    
     pos_mapping = {
         'NOUN': 'Іменник', 'ADJF': 'Прикметник', 'ADJS': 'Короткий прикметник',
         'COMP': 'Компаратив', 'VERB': 'Дієслово', 'INFN': 'Інфінітив',
@@ -65,5 +73,5 @@ def analyze_word_extra(word):
         'PREP': 'Прийменник', 'CONJ': 'Сполучник', 'PRCL': 'Частка', 'INTJ': 'Вигук'
     }
     pos_name = pos_mapping.get(parsed.tag.POS, "Невизначено")
-
+    
     return f"**Слово:** {clean_word} | **Склади/Переноси:** {syllables} | **Частина мови:** {pos_name}"
