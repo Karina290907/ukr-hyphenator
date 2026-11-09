@@ -48,10 +48,11 @@ def hyphenate_word(word):
     return res
 
 def process_text(text):
-    words_and_symbols = re.findall(r'\b\w+\b|\W+', text)
+    # ОНОВЛЕНО: Тепер регулярний вираз розпізнає слова з апострофом як єдине ціле
+    words_and_symbols = re.findall(r"[а-яА-ЯєЄіІїЇґҐ]+(?:['’][а-яА-ЯєЄіІїЇґҐ]+)*|[^а-яА-ЯєЄіІїЇґҐ]+", text)
     result = []
     for item in words_and_symbols:
-        if re.match(r'^[а-яА-ЯєЄіІїЇґҐ\'’ьЬ]+$', item): 
+        if re.match(r"^[а-яА-ЯєЄіІїЇґҐ'’]+$", item): 
             result.append(hyphenate_word(item))
         else:
             result.append(item)
